@@ -31,9 +31,10 @@ public class WebServer {
             while((connection = listenSocket.accept()) != null) {
 
                 //pass request to request handler
-                //RequestHandler requestHandler = new RequestHandler(connection);
-                //requestHandler.start();
                 log.debug("socket connected");
+
+                RequestHandler requestHandler = new RequestHandler(connection);
+                requestHandler.start();
             }
 
         } catch (IOException e) {
