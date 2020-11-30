@@ -4,12 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.Socket;
 //import java.net.http.HttpRequest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import model.User;
 
@@ -38,6 +41,9 @@ public class RequestHandlers extends Thread {
             }
 
             String[] token = line.split(" ");
+            int contentLength = 0;
+            boolean body_start = false;
+
             String uri = token[1];
 
             if (uri.endsWith(".html")) {
@@ -49,9 +55,42 @@ public class RequestHandlers extends Thread {
             }
             else if(uri.startsWith("/user/create")) {
                 log.info(line);
-                //parsing query
-                String[] tmp = uri.split("\\?");
-                String[] quries = tmp[1].split("&");
+
+                //get 방식으로 처리한 유저 생성.=======================
+//                //parsing query
+//                String[] tmp = uri.split("\\?");
+//                String[] quries = tmp[1].split("&");
+//                Map<String, String> map = new HashMap<String, String>();
+//                for (String query : quries)
+//                {
+//                    String name = query.split("=")[0];
+//                    String value = query.split("=")[1];
+//                    map.put(name, value);
+//                }
+//
+//                //
+//                User user = new User(map.get("userId"), map.get("password"), map.get("name"), map.get("email"));
+//                log.info("user : {}", user);리
+
+
+                //post 방식으로 처리한 유저 생성.=======================
+                while(!line.equals("")) {
+
+                    if(line.contains("Content-Length")) {
+                        String[] content_len = line.replace(" ", "").split(":");
+                        contentLength = Integer.parseInt(content_len[1]);
+                    }
+
+                    line = br.readLine();
+                }
+
+                // read body data
+                char[] req_body_data = new char[contentLength];
+                br.read(req_body_data, 0, contentLength);
+                String str_body_data = String.copyValueOf(req_body_data);
+
+                // parsign body data
+                String[] quries = str_body_data.split("&");
                 Map<String, String> map = new HashMap<String, String>();
                 for (String query : quries)
                 {
@@ -60,9 +99,12 @@ public class RequestHandlers extends Thread {
                     map.put(name, value);
                 }
 
-                //
+                // set user account info
                 User user = new User(map.get("userId"), map.get("password"), map.get("name"), map.get("email"));
                 log.info("user : {}", user);
+
+
+
 
             } else {
                 DataOutputStream dos = new DataOutputStream(out);
