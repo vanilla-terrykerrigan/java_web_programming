@@ -33,7 +33,7 @@ public class WebServer {
                 //pass request to request handler
                 log.debug("socket connected");
 
-                RequestHandler requestHandler = new RequestHandler(connection);
+                RequestHandlers requestHandler = new RequestHandlers(connection);
                 requestHandler.start();
             }
 
